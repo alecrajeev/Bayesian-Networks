@@ -6,10 +6,17 @@ from HashTable import HashTable
 from CPT import CPT
 from Node import Node
 import copy
+import sys
 
-def exact_inference(query, variables, Graph, Hash_Nodes):
-    evidence_values = [["J", True], ["M", True]]
+def exact_inference(input_values, variables, Graph, Hash_Nodes):
+    evidence_values = []
 
+    ecount = 1
+    while ecount < (len(input_values)-1):
+        evidence_values.append([input_values[ecount],input_values[ecount+1]])
+        ecount += 2
+
+    query = input_values[0]
     query_variable = None
     for i in xrange(0, len(Graph)):
         if Graph[i].name == query:
@@ -45,10 +52,9 @@ def enumerate(variables_list, evidence_values, Graph, Hash_Nodes):
         p = get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes)
         rest_variables = variables_list[1:len(variables_list)]
         return p * enumerate(rest_variables, evidence_values, Graph, Hash_Nodes)
-        # then multiply this by return enumerate(rest(variables))
     else:
         sum = 0.0
-        # eventually cycle through to all values in Y's domain
+        # cycle through to all values in Y's domain
         for i in xrange(0, Y.domain.size):
             # the additional evidence where you extend Y = y
             additional_evidence = copy.deepcopy(evidence_values)
@@ -227,10 +233,21 @@ def getDomain(branch):
             
     return domain
 
+def format_input(input_values):
+    input_values = input_values[1:len(input_values)]
+    for i in xrange(0, len(input_values)):
+        if input_values[i] == "True" or input_values[i] == "true":
+            input_values[i] = True
+        elif input_values[i] == "False" or input_values[i] == "false":
+            input_values[i] = False
+
+    return input_values
+
 def main():
+    input_values = format_input(sys.argv)
     variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes = Parser()
     Graph = build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes)
-    exact_inference("B", variables, Graph, Hash_Nodes)
+    exact_inference(input_values, variables, Graph, Hash_Nodes)
 
 
 if __name__ == '__main__':
