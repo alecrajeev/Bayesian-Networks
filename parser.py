@@ -48,7 +48,13 @@ def Parser():
                             # print "\n"
                     # print cpt
                     print cpt.for_variable.name
-                    print cpt.table
+                    if cpt.given_variables is None:
+                        print cpt.table
+                    else:
+                        for t in xrange(0, len(cpt.given_variables)):
+                            print "given: " + str(cpt.given_variables[t].name)
+                        print cpt.table
+                    print ""
                     # print cpt.given_domain_sizes
 
 

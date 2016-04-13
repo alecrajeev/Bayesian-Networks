@@ -33,7 +33,7 @@ class CPT(object):
 
     def build_table(self):
         if self.given_variables is None:
-            self.table = np.full((1, self.for_size),-1.0, dtype=np.float32)
+            self.table = np.full((1, self.for_size),-1.0, dtype=np.float_)
         else:
             n = 1
             for k in xrange(0, len(self.given_domain_sizes)):
@@ -41,7 +41,7 @@ class CPT(object):
                     print "problem in the domain sizes"
                 n *= self.given_domain_sizes[k]
             
-            self.table = np.full((n,self.for_size),-1.0, dtype=np.float32)
+            self.table = np.full((n,self.for_size),-1.0, dtype=np.float_)
 
     def add_prob(self, p):
 
