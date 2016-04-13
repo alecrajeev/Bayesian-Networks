@@ -1,4 +1,4 @@
-
+from Domain import Domain
 
 class RandomVariable(object):
     """
