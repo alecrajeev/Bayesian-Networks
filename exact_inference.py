@@ -125,8 +125,8 @@ def build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes):
 
     return Graph
 
-def Parser():
-    tree = ET.parse("alarm.xml")
+def Parser(file_name):
+    tree = ET.parse(file_name)
     root = tree.getroot()
 
     n_prime = 67
@@ -234,7 +234,7 @@ def getDomain(branch):
     return domain
 
 def format_input(input_values):
-    input_values = input_values[1:len(input_values)]
+    input_values = input_values[2:len(input_values)]
     for i in xrange(0, len(input_values)):
         if input_values[i] == "True" or input_values[i] == "true":
             input_values[i] = True
@@ -245,7 +245,7 @@ def format_input(input_values):
 
 def main():
     input_values = format_input(sys.argv)
-    variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes = Parser()
+    variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes = Parser(sys.argv[1])
     Graph = build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes)
     exact_inference(input_values, variables, Graph, Hash_Nodes)
 
