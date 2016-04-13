@@ -5,6 +5,7 @@ from Domain import Domain
 from HashTable import HashTable
 from CPT import CPT
 from Node import Node
+import copy
 
 def exact_inference(variables, Hash_Variables, cp_tables, Hash_CPT, Graph, Hash_Nodes):
     evidence = ["J", "M"]
@@ -20,33 +21,49 @@ def exact_inference(variables, Hash_Variables, cp_tables, Hash_CPT, Graph, Hash_
 
     evidence_values.append(["B", True])
 
-    # print evidence_values
-
     enumerate(variables_list, evidence_values, Graph, Hash_Nodes)
 
 def enumerate(variables_list, evidence_values, Graph, Hash_Nodes):
     if len(variables_list) == 0:
         return 1.0
     Y = variables_list[0]
+    print Y.name
+
     y = grab_y(Y, evidence_values)
     if check_Y(Y, y, evidence_values):
-        print "ok"
+        print "check y == true"
         p = get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes)
-        print p
-        # the multiply this by return enumerate(rest(variables))
+        rest_variables = variables_list[1:len(variables_list)]
+        print "B == " + str(y)
+        print "p == " + str(p)
+        return p * enumerate(rest_variables, evidence_values, Graph, Hash_Nodes)
+        # then multiply this by return enumerate(rest(variables))
     else:
+        print "check y == false"
         sum = 0.0
+        # eventually cycle through to all values in Y's domain
         for i in xrange(0, Y.domain.size):
-            print Y.domain.domain_list[i]
+            # the additional evidence where you extend Y = y
+            print Y.name + " == " + str(Y.domain.domain_list[i])
+            additional_evidence = copy.deepcopy(evidence_values)
+            additional_evidence.append([Y.name, Y.domain.domain_list[i]])
+            p = get_conditional_probability(Y, additional_evidence, Graph, Hash_Nodes)
+            rest_variables = variables_list[1:len(variables_list)]
+            print "p == " + str(p)
+            sum += p * enumerate(rest_variables, evidence_values, Graph, Hash_Nodes)
+        return sum
 
 def get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes):
-    # print Y.name
+    if Y.name == "A":
+        print "find conditional A"
+        print evidence_values
+
     node = Hash_Nodes.get(Y.name)
-    # print node
     cpt = node.cpt
-    # print cpt.table
     # print node.cpt.get_prob(evidence_values)
-    return cpt.get_prob(evidence_values)
+    p = cpt.get_prob(evidence_values)
+
+    return p
 
 
 def grab_y(Y, evidence_values):
@@ -211,8 +228,8 @@ def getDomain(branch):
 
 def main():
     variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes = Parser()
-    Graph = build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes)
-    exact_inference(variables, Hash_Variables, cp_tables, Hash_CPT, Graph, Hash_Nodes)
+    # Graph = build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes)
+    # exact_inference(variables, Hash_Variables, cp_tables, Hash_CPT, Graph, Hash_Nodes)
 
 
 if __name__ == '__main__':

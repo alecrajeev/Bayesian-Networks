@@ -1,6 +1,7 @@
 import numpy as np
 from Domain import Domain
 from RandomVariable import RandomVariable
+from itertools import product
 
 class CPT(object):
     """
@@ -9,7 +10,13 @@ class CPT(object):
     given_variables is a list that represents the list of given given_variables
     given_domain_sizes is a list of sizes of domains for the given given_variables
 
-    table is the actual conditional probability table. It will have the number of rows corresponding to all the possible combinations of values that the given variables can take. It will have the number of columns representing all the possible values that the for variable can take. When numbers are being inputted it assumes that the probablities are given in the order that the original random variable listed its outcomes.
+    table is the actual conditional probability table.
+    It will have the number of rows corresponding to all the possible combinations
+    of values that the given variables can take.
+    It will have the number of columns representing all the possible values that the
+    for variable can take.
+    When numbers are being inputted it assumes that the probablities are given in the
+     order that the original random variable listed its outcomes.
     """
 
     def __init__(self):
@@ -19,6 +26,7 @@ class CPT(object):
         self.given_variables = None
         self.given_domain_sizes = None
         self.table = None
+        self.helper_table = None
 
     def add_for_variable(self, for_variable):
         self.for_variable = for_variable
@@ -42,7 +50,24 @@ class CPT(object):
                 if self.given_domain_sizes[k] == 0:
                     print "problem in the domain sizes"
                 n *= self.given_domain_sizes[k]
-            
+
+            print self.name
+            print self.given_domain_sizes
+            self.helper_table = [None]*n
+
+            helper_domain = []
+
+            for i in xrange(0, len(self.given_variables)):
+                helper_domain.append(self.given_variables[i].domain.domain_list)
+
+
+            helper_iter = list(product(*helper_domain))
+            for i in xrange(0, len(self.helper_table)):
+                self.helper_table[i] = list(helper_iter[i])
+
+            print self.helper_table
+
+
             self.table = np.full((n,self.for_size),-1.0, dtype=np.float_)
 
     def add_prob(self, p):
@@ -55,18 +80,23 @@ class CPT(object):
         print "woah the table is full"
 
     def get_prob(self, evidence_values):
-        print evidence_values
+        # print evidence_values
         for_v = []
         for i in xrange(0, len(evidence_values)):
             if self.name == evidence_values[i][0]:
                 for_v = evidence_values[i]
-        print for_v
+        # print for_v
 
         for_v_index = self.get_index(for_v[1])
 
         if self.given_variables is None:
             return self.table[0][for_v_index]
-        
+        else:
+            print "complicated givens"
+            print self.given_variables[0].name
+            print self.given_variables[1].name
+            return None
+
         return .7
 
     def get_index(self, val):
