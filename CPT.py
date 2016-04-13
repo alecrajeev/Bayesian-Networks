@@ -75,19 +75,16 @@ class CPT(object):
         print "woah the table is full"
 
     def get_prob(self, evidence_values):
-        # print evidence_values
         for_v = []
         for i in xrange(0, len(evidence_values)):
             if self.name == evidence_values[i][0]:
                 for_v = evidence_values[i]
-        # print for_v
 
         for_v_index = self.get_index(for_v[1])
 
         if self.given_variables is None:
             return self.table[0][for_v_index]
         else:
-            print "complicated givens"
             given_v_index = self.get_given_index(evidence_values)
             
             return self.table[given_v_index, for_v_index]
@@ -104,11 +101,7 @@ class CPT(object):
 
         given_values = [None]*len(self.given_variables)
         for i in xrange(0, len(given_values)):
-            print i
-            a = self.get_evidence_val(self.given_variables[i].name, evidence_values)
-            print a
-            given_values[i] = a
-        print given_values
+            given_values[i] = self.get_evidence_val(self.given_variables[i].name, evidence_values)
 
         for i in xrange(0, len(self.helper_table)):
             if self.check_helper(given_values, i):
