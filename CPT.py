@@ -54,6 +54,27 @@ class CPT(object):
                     return True
         print "woah the table is full"
 
+    def get_prob(self, evidence_values):
+        print evidence_values
+        for_v = []
+        for i in xrange(0, len(evidence_values)):
+            if self.name == evidence_values[i][0]:
+                for_v = evidence_values[i]
+        print for_v
+
+        for_v_index = self.get_index(for_v[1])
+
+        if self.given_variables is None:
+            return self.table[0][for_v_index]
+        
+        return .7
+
+    def get_index(self, val):
+        for i in xrange(0, self.for_variable.domain.size):
+            if val == self.for_variable.domain.domain_list[i]:
+                return i
+        print "whoops, value for evidence is not in domain"
+
 
 
 

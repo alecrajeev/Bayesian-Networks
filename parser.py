@@ -6,6 +6,70 @@ from HashTable import HashTable
 from CPT import CPT
 from Node import Node
 
+def exact_inference(variables, Hash_Variables, cp_tables, Hash_CPT, Graph, Hash_Nodes):
+    evidence = ["J", "M"]
+
+    evidence_values = [["J", True], ["M", True]]
+
+    query = ["B"]
+    hidden = []
+
+    variables_list = []
+    for i in xrange(0, len(Graph)):
+        variables_list.append(Graph[i].random_variable)
+
+    evidence_values.append(["B", True])
+
+    # print evidence_values
+
+    enumerate(variables_list, evidence_values, Graph, Hash_Nodes)
+
+def enumerate(variables_list, evidence_values, Graph, Hash_Nodes):
+    if len(variables_list) == 0:
+        return 1.0
+    Y = variables_list[0]
+    y = grab_y(Y, evidence_values)
+    if check_Y(Y, y, evidence_values):
+        print "ok"
+        p = get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes)
+        print p
+        # the multiply this by return enumerate(rest(variables))
+    else:
+        sum = 0.0
+        for i in xrange(0, Y.domain.size):
+            print Y.domain.domain_list[i]
+
+def get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes):
+    # print Y.name
+    node = Hash_Nodes.get(Y.name)
+    # print node
+    cpt = node.cpt
+    # print cpt.table
+    # print node.cpt.get_prob(evidence_values)
+    return cpt.get_prob(evidence_values)
+
+
+def grab_y(Y, evidence_values):
+    """
+    this returns the value for Y in the evidnce or
+    just Y's first value if it's not in the evidence
+    """
+    for i in xrange(0, len(evidence_values)):
+        if Y.name == evidence_values[i][0]:
+            return evidence_values[i][1]
+    return Y.domain.domain_list[0]
+
+def check_Y(Y, y, evidence_values):
+    """
+    this checks if the random variable Y is in the evidence
+    """
+    for i in xrange(0, len(evidence_values)):
+        if Y.name == evidence_values[i][0] and y == evidence_values[i][1]:
+            return True
+
+    return False
+
+
 def build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes):
     Graph = []
 
@@ -38,7 +102,7 @@ def build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes):
     return Graph
 
 def Parser():
-    tree = ET.parse("aima-wet-grass.xml")
+    tree = ET.parse("alarm.xml")
     root = tree.getroot()
 
     n_prime = 67
@@ -148,6 +212,7 @@ def getDomain(branch):
 def main():
     variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes = Parser()
     Graph = build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes)
+    exact_inference(variables, Hash_Variables, cp_tables, Hash_CPT, Graph, Hash_Nodes)
 
 
 if __name__ == '__main__':
