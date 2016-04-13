@@ -10,6 +10,8 @@ class Node(object):
         self.name = self.random_variable.name
         self.cpt = cpt
         self.children_nodes = None
+        self.temp_mark = 0
+        self.perm_mark = 0
 
     def add_child(self, node):
         if self.children_nodes is None:
