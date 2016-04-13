@@ -1,6 +1,8 @@
 import numpy as np
 import xml.etree.ElementTree as ET
 from RandomVariable import RandomVariable
+from Domain import Domain
+
 
 def Parser():
     tree = ET.parse("alarm.xml")
@@ -17,26 +19,24 @@ def Parser():
             print "name of network == " + str(root[0][0].text)
             for i in xrange(1, len(root[0])):
                 if root[0][i].tag == "VARIABLE":
-                    print "new RandomVariable(" + root[0][i][0].text + ")"
-                    outcomes = getOutcomes(root[0][i])
-                    rv = RandomVariable(root[0][i][0].text, outcomes)
+                    # print "new RandomVariable(" + root[0][i][0].text + ")"
+                    domain = getDomain(root[0][i])
+                    rv = RandomVariable(root[0][i][0].text, domain)
                     variables.append(rv)
+                elif root[0][i].tag == "DEFINITION":
+                    print "definition"
 
-    for i in xrange(0, len(variables)):
-        print variables[i]
+    # for i in xrange(0, len(variables)):
+    #     print variables[i].domain.domain_list[0] == True
 
-def getOutcomes(branch):
-    outcomes = []
+def getDomain(branch):
+    domain = Domain()
+
     for i in xrange(0, len(branch)):
         if branch[i].tag == "OUTCOME":
-            if branch[i].text == "true" or branch[i].text == "True":
-                outcomes.append(True)
-            elif branch[i].text == "false" or branch[i].text == "False":
-                outcomes.append(False)
-            else:
-                outcomes.append(branch[i].text)
-    print "outcomes == " + str(outcomes)
-    return outcomes
+            domain.add_to_domain(branch[i].text)
+            
+    return domain
 
 def main():
     Parser()
