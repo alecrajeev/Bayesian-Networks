@@ -51,8 +51,6 @@ class CPT(object):
                     print "problem in the domain sizes"
                 n *= self.given_domain_sizes[k]
 
-            print self.name
-            print self.given_domain_sizes
             self.helper_table = [None]*n
 
             helper_domain = []
@@ -64,9 +62,6 @@ class CPT(object):
             helper_iter = list(product(*helper_domain))
             for i in xrange(0, len(self.helper_table)):
                 self.helper_table[i] = list(helper_iter[i])
-
-            print self.helper_table
-
 
             self.table = np.full((n,self.for_size),-1.0, dtype=np.float_)
 
@@ -93,9 +88,9 @@ class CPT(object):
             return self.table[0][for_v_index]
         else:
             print "complicated givens"
-            print self.given_variables[0].name
-            print self.given_variables[1].name
-            return None
+            given_v_index = self.get_given_index(evidence_values)
+            
+            return self.table[given_v_index, for_v_index]
 
         return .7
 
@@ -104,6 +99,34 @@ class CPT(object):
             if val == self.for_variable.domain.domain_list[i]:
                 return i
         print "whoops, value for evidence is not in domain"
+
+    def get_given_index(self, evidence_values):
+
+        given_values = [None]*len(self.given_variables)
+        for i in xrange(0, len(given_values)):
+            print i
+            a = self.get_evidence_val(self.given_variables[i].name, evidence_values)
+            print a
+            given_values[i] = a
+        print given_values
+
+        for i in xrange(0, len(self.helper_table)):
+            if self.check_helper(given_values, i):
+                return i
+
+    def get_evidence_val(self, name, evidence_values):
+        for i in xrange(0, len(evidence_values)):
+            if evidence_values[i][0] == name:
+                return evidence_values[i][1]
+        print "whoops, there should be an evidence that there isn't"
+        return 1000
+
+    def check_helper(self, given_values, i):
+        
+        for j in xrange(0, len(self.helper_table[i])):
+            if self.helper_table[i][j] != given_values[j]:
+                return False
+        return True
 
 
 

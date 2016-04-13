@@ -21,7 +21,8 @@ def exact_inference(variables, Hash_Variables, cp_tables, Hash_CPT, Graph, Hash_
 
     evidence_values.append(["B", True])
 
-    enumerate(variables_list, evidence_values, Graph, Hash_Nodes)
+    en = enumerate(variables_list, evidence_values, Graph, Hash_Nodes)
+    print "enum == " + str(en)
 
 def enumerate(variables_list, evidence_values, Graph, Hash_Nodes):
     if len(variables_list) == 0:
@@ -50,7 +51,7 @@ def enumerate(variables_list, evidence_values, Graph, Hash_Nodes):
             p = get_conditional_probability(Y, additional_evidence, Graph, Hash_Nodes)
             rest_variables = variables_list[1:len(variables_list)]
             print "p == " + str(p)
-            sum += p * enumerate(rest_variables, evidence_values, Graph, Hash_Nodes)
+            sum += p * enumerate(rest_variables, additional_evidence, Graph, Hash_Nodes)
         return sum
 
 def get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes):
@@ -228,8 +229,8 @@ def getDomain(branch):
 
 def main():
     variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes = Parser()
-    # Graph = build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes)
-    # exact_inference(variables, Hash_Variables, cp_tables, Hash_CPT, Graph, Hash_Nodes)
+    Graph = build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes)
+    exact_inference(variables, Hash_Variables, cp_tables, Hash_CPT, Graph, Hash_Nodes)
 
 
 if __name__ == '__main__':
