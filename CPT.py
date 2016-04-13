@@ -14,6 +14,7 @@ class CPT(object):
 
     def __init__(self):
         self.for_variable = None
+        self.name = None
         self.for_size = 0
         self.given_variables = None
         self.given_domain_sizes = None
@@ -21,6 +22,7 @@ class CPT(object):
 
     def add_for_variable(self, for_variable):
         self.for_variable = for_variable
+        self.name = for_variable.name
         self.for_size = self.for_variable.domain.size
 
     def add_given_variable(self, given_variable):
