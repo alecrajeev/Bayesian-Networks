@@ -5,12 +5,13 @@ from Domain import Domain
 from HashTable import HashTable
 from CPT import CPT
 from Node import Node
+from AtomicEvent import AtomicEvent
 import copy
 import sys
 
-def exact_inference(input_values, Graph, Hash_Nodes):
-    evidence_values = []
+def rejection_sampling(input_values, Graph, Hash_Nodes, N):
 
+    evidence_values = []
     ecount = 1
     while ecount < (len(input_values)-1):
         evidence_values.append([input_values[ecount],input_values[ecount+1]])
@@ -22,49 +23,13 @@ def exact_inference(input_values, Graph, Hash_Nodes):
         if Graph[i].name == query:
             query_variable = Graph[i].random_variable
 
-    variables_list = []
-    for i in xrange(0, len(Graph)):
-        variables_list.append(Graph[i].random_variable)
+    print evidence_values
 
-    posterior_distribution = [None]*query_variable.domain.size
+    single_event = AtomicEvent(Graph)
+    print single_event.sample_nodes[0].random_variable
 
-    for i in xrange(0, query_variable.domain.size):
-        evidence_values.append([query_variable.name, query_variable.domain.domain_list[i]])
-        en = enumerate(variables_list, evidence_values, Graph, Hash_Nodes)
-        evidence_values.pop()
-        posterior_distribution[i] = en
+    samples = [None]*N
 
-    posterior_distribution = np.array(posterior_distribution)
-
-    sum = np.sum(posterior_distribution)
-
-    alpha = 1.0/sum
-
-    print "Query Variable: " + str(query_variable.name)
-    print query_variable.domain.domain_list
-    print posterior_distribution*alpha
-
-def enumerate(variables_list, evidence_values, Graph, Hash_Nodes):
-    if len(variables_list) == 0:
-        return 1.0
-    Y = variables_list[0]
-
-    y = grab_y(Y, evidence_values)
-    if check_Y(Y, y, evidence_values):
-        p = get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes)
-        rest_variables = variables_list[1:len(variables_list)]
-        return p * enumerate(rest_variables, evidence_values, Graph, Hash_Nodes)
-    else:
-        sum = 0.0
-        # cycle through to all values in Y's domain
-        for i in xrange(0, Y.domain.size):
-            # the additional evidence where you extend Y = y
-            additional_evidence = copy.deepcopy(evidence_values)
-            additional_evidence.append([Y.name, Y.domain.domain_list[i]])
-            p = get_conditional_probability(Y, additional_evidence, Graph, Hash_Nodes)
-            rest_variables = variables_list[1:len(variables_list)]
-            sum += p * enumerate(rest_variables, additional_evidence, Graph, Hash_Nodes)
-        return sum
 
 def get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes):
     node = Hash_Nodes.get(Y.name)
@@ -236,7 +201,7 @@ def getDomain(branch):
     return domain
 
 def format_input(input_values):
-    input_values = input_values[2:len(input_values)]
+    input_values = input_values[3:len(input_values)]
     for i in xrange(0, len(input_values)):
         if input_values[i] == "True" or input_values[i] == "true":
             input_values[i] = True
@@ -247,10 +212,9 @@ def format_input(input_values):
 
 def main():
     input_values = format_input(sys.argv)
-    variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes = Parser(sys.argv[1])
+    variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes = Parser(sys.argv[2])
     Graph = build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes)
-    exact_inference(input_values, Graph, Hash_Nodes)
-
+    rejection_sampling(input_values, Graph, Hash_Nodes, int(sys.argv[1]))
 
 if __name__ == '__main__':
   main()
