@@ -2,7 +2,8 @@
 
 class Node(object):
     """
-    This node will be represent a Node on the DAG. Each random variable will have a node
+    This node will be represent a Node on the DAG. Each random variable will have a node.
+    The node contains the random variable, its conditional probability table, and the children nodes.
     """
 
     def __init__(self, random_variable, cpt):

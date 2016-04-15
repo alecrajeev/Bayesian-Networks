@@ -29,11 +29,17 @@ class CPT(object):
         self.helper_table = None
 
     def add_for_variable(self, for_variable):
+        """
+        Adds the for variable for this condiontional probability table.
+        """
         self.for_variable = for_variable
         self.name = for_variable.name
         self.for_size = self.for_variable.domain.size
 
     def add_given_variable(self, given_variable):
+        """
+        This will add the list of given variables for this condiontional probability table.
+        """
         if self.given_variables is None:
             self.given_variables = []
         self.given_variables.append(given_variable)
@@ -42,6 +48,11 @@ class CPT(object):
         self.given_domain_sizes.append(given_variable.domain.size)
 
     def build_table(self):
+        """
+        This build the condiontional probability table.
+        It also builds a helper table that represnts the values of the given 
+        variables for each row. This helper table is built with itertools.
+        """
         if self.given_variables is None:
             self.table = np.full((1, self.for_size),-1.0, dtype=np.float_)
         else:
@@ -65,6 +76,9 @@ class CPT(object):
             self.table = np.full((n,self.for_size),-1.0, dtype=np.float_)
 
     def add_prob(self, p):
+        """
+        Adds the probability from the parsed table to the conditional probability table.
+        """
 
         for i in xrange(0, np.shape(self.table)[0]):
             for j in xrange(0, np.shape(self.table)[1]):
@@ -97,10 +111,17 @@ class CPT(object):
 
 
     def get_assigned_variable(self, prob):
+        """
+        This returns the randomly assigned variable. The probability of getting this outcome corresponds
+        to the condiontional probability table.
+        """
         choice = np.random.choice(self.for_variable.domain.domain_list, 1, p=prob)
         return choice[0]
 
     def get_prob(self, evidence_values):
+        """
+        This gives the condiontional probability given the evidence_values.
+        """
         for_v = []
         for i in xrange(0, len(evidence_values)):
             if self.name == evidence_values[i][0]:
@@ -118,12 +139,20 @@ class CPT(object):
         return .7
 
     def get_index(self, val):
+        """
+        It returns the index of the for_variable's domain that has the corresponding outcome.
+        """
         for i in xrange(0, self.for_variable.domain.size):
             if val == self.for_variable.domain.domain_list[i]:
                 return i
         print "whoops, value for evidence is not in domain"
 
     def get_given_index(self, evidence_values):
+        """
+        This gives which row of the conditional probability table corresponds to the given variables assigned values.
+        These assigned values come either from prior sampling or the evidence.
+        It uses the helper table to do this.
+        """
 
         if self.check_given_variables_needed(evidence_values):
             print "whoops, not in topological order or something. Required given variable is not included"
@@ -145,7 +174,6 @@ class CPT(object):
         Otherwise returns true.
         """
 
-
         for i in xrange(0, len(self.given_variables)):
             g = self.given_variables[i].name
             g_included = False
@@ -165,6 +193,9 @@ class CPT(object):
         return 1000
 
     def check_helper(self, given_values, i):
+        """
+        Checks if any of the given variables that should have values don't.
+        """
         
         for j in xrange(0, len(self.helper_table[i])):
             if self.helper_table[i][j] != given_values[j]:

@@ -10,6 +10,16 @@ import copy
 import sys
 
 def rejection_sampling(input_values, Graph, Hash_Nodes, N):
+    """
+    This implements the rejection sampling algorithm for approximate inference.
+    It returns the estimated posterior distribution.
+    It takes in the evidence and query variables from the input.
+
+    It builds 1000 prior samples randomly using the conditional probabities.
+    Then rejects the samples that don't fit the evidence.
+    Then counts the number of accepted samples and normalizes to get
+    the posterior distribution.
+    """
 
     evidence_values = []
     ecount = 1
@@ -27,6 +37,7 @@ def rejection_sampling(input_values, Graph, Hash_Nodes, N):
     atomic_event_list = [None]*N
 
     # all 1000 events get randomly assigned
+    # prior sampling
     for i in xrange(0, N):
         event = AtomicEvent(Graph)
         prior_sampling(event)
@@ -34,18 +45,22 @@ def rejection_sampling(input_values, Graph, Hash_Nodes, N):
 
     accept_list = []
 
+    # rejects the samples that don't follow the evidence
     for i in xrange(0, N):
         event = atomic_event_list[i]
         if accepted_event(event, evidence_values):
             accept_list.append(event)
 
+    # counts the samples for each outcome in the query variable's domain
     samples_count_per_outcome = np.zeros(query_variable.domain.size, dtype=np.int32)
     for i in xrange(0, len(accept_list)):
         update_count(samples_count_per_outcome, accept_list[i], query_variable)
 
     print "Query Variable: " + str(query_variable.name)
     print query_variable.domain.domain_list
-    print samples_count_per_outcome/float(np.sum(samples_count_per_outcome))
+    posterior_distribution = samples_count_per_outcome/float(np.sum(samples_count_per_outcome))
+    print posterior_distribution
+    return posterior_distribution
 
 def prior_sampling(event):
     """
@@ -60,6 +75,9 @@ def prior_sampling(event):
         sample.assign_random_value(parent_values)
 
 def update_count(samples_count_per_outcome, accepted_event, query_variable):
+    """
+    Updates the count of the number of accepted events for a particular outcome.
+    """
     for i in xrange(0, len(accepted_event.sample_nodes)):
         if accepted_event.sample_nodes[i].name == query_variable.name:
             j = accepted_event.get_domain_value_index(i)
@@ -77,38 +95,12 @@ def accepted_event(event, evidence_values):
 
     return True
 
-
-
-def get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes):
-    node = Hash_Nodes.get(Y.name)
-    cpt = node.cpt
-    p = cpt.get_prob(evidence_values)
-
-    return p
-
-
-def grab_y(Y, evidence_values):
-    """
-    this returns the value for Y in the evidnce or
-    just Y's first value if it's not in the evidence
-    """
-    for i in xrange(0, len(evidence_values)):
-        if Y.name == evidence_values[i][0]:
-            return evidence_values[i][1]
-    return Y.domain.domain_list[0]
-
-def check_Y(Y, y, evidence_values):
-    """
-    this checks if the random variable Y is in the evidence
-    """
-    for i in xrange(0, len(evidence_values)):
-        if Y.name == evidence_values[i][0] and y == evidence_values[i][1]:
-            return True
-
-    return False
-
-
 def build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes):
+    """
+    This builds the Graph. It creates a Node for each random variable.
+    Each Node also gets that random variables' conditional probability table.
+    Then it sorts the Graph with a topological sort.
+    """
     Graph = []
 
     for i in xrange(0, len(variables)):
@@ -140,6 +132,11 @@ def build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes):
     return Graph
 
 def Parser(file_name):
+    """
+    Parses the xmlbif file and builds the list of variables.
+    Also builds the list condiotional probability tables.
+    Also couple hash tables are built to quickly access things.
+    """
     tree = ET.parse(file_name)
     root = tree.getroot()
 
@@ -186,29 +183,10 @@ def Parser(file_name):
 
     return variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes
 
-def print_cpt(cpt):
-    print cpt
-    print cpt.for_variable.name
-    if cpt.given_variables is None:
-        print cpt.table
-    else:
-        for t in xrange(0, len(cpt.given_variables)):
-            print "given: " + str(cpt.given_variables[t].name)
-        print cpt.table
-    print ""
-    print cpt.given_domain_sizes
-
-def print_graph(Graph):
-    for i in xrange(0, len(Graph)):
-        print Graph[i].name
-        if Graph[i].children_nodes is None:
-            print "no children"
-        else:
-            for j in xrange(0, len(Graph[i].children_nodes)):
-                print "Child: " + str(Graph[i].children_nodes[j].name)
-        print ""
-
 def topological_visit(node, sorted_nodes):
+    """
+    Uses depth first search to do a topological sort
+    """    
     if node.temp_mark == 1:
         print "Graph not DAG"
         return None
@@ -223,6 +201,9 @@ def topological_visit(node, sorted_nodes):
 
 
 def check_unmarked(Graph):
+    """
+    Checked if permanently mark is false. Used in topololgical sort
+    """    
     for i in xrange(0, len(Graph)):
         if Graph[i].perm_mark == 0:
             return True
@@ -230,6 +211,10 @@ def check_unmarked(Graph):
     return False
 
 def connect(Hash_Nodes, cpt):
+    """
+    Connects the children nodes to the parents.
+    A variable that has givens will be the children of the givens.
+    """    
     if cpt.given_variables is None:
         # node has no givens, is a root node
         return 1
@@ -239,6 +224,9 @@ def connect(Hash_Nodes, cpt):
         Hash_Nodes.get(n.name).add_child(Hash_Nodes.get(cpt.name))
 
 def getDomain(branch):
+    """
+    Parses and stores all the possible outcomes of a Random Variable.
+    """
     domain = Domain()
 
     for i in xrange(0, len(branch)):
@@ -248,6 +236,10 @@ def getDomain(branch):
     return domain
 
 def format_input(input_values):
+    """
+    This takes the command line arguments and splits them up into
+    more manageable parts.
+    """
     input_values = input_values[3:len(input_values)]
     for i in xrange(0, len(input_values)):
         if input_values[i] == "True" or input_values[i] == "true":

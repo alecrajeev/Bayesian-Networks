@@ -4,8 +4,7 @@ from HashNode import HashNode
 
 class HashTable(object):
     """
-    This is the Hash Table object that is used to quickly find a Random Variables id.
-    The id is randomly assigned.
+    This is the Hash Table object that is used to quickly find objects.
     """
 
     def __init__(self, table_size):
