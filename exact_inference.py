@@ -57,6 +57,7 @@ def exact_inference(input_values, Graph, Hash_Nodes):
     alpha = 1.0/sum
 
     print "Query Variable: " + str(query_variable.name)
+    print "Evidence: " + str(evidence_values)
     print query_variable.domain.domain_list
     print posterior_distribution*alpha
     return posterior_distribution
@@ -160,7 +161,7 @@ def build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes):
 def Parser(file_name):
     """
     Parses the xmlbif file and builds the list of variables.
-    Also builds the list condiotional probability tables.
+    Also builds the list conditional probability tables.
     Also couple hash tables are built to quickly access things.
     """
     tree = ET.parse(file_name)
@@ -208,34 +209,6 @@ def Parser(file_name):
                     Hash_CPT.put(cpt.name,cpt)
 
     return variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes
-
-def print_cpt(cpt):
-    """
-    Prints the conditional probability table
-    """
-    print cpt
-    print cpt.for_variable.name
-    if cpt.given_variables is None:
-        print cpt.table
-    else:
-        for t in xrange(0, len(cpt.given_variables)):
-            print "given: " + str(cpt.given_variables[t].name)
-        print cpt.table
-    print ""
-    print cpt.given_domain_sizes
-
-def print_graph(Graph):
-    """
-    Prints the graph. Prints each nodes and it's children
-    """
-    for i in xrange(0, len(Graph)):
-        print Graph[i].name
-        if Graph[i].children_nodes is None:
-            print "no children"
-        else:
-            for j in xrange(0, len(Graph[i].children_nodes)):
-                print "Child: " + str(Graph[i].children_nodes[j].name)
-        print ""
 
 def topological_visit(node, sorted_nodes):
     """

@@ -57,6 +57,7 @@ def rejection_sampling(input_values, Graph, Hash_Nodes, N):
         update_count(samples_count_per_outcome, accept_list[i], query_variable)
 
     print "Query Variable: " + str(query_variable.name)
+    print "Evidence: " + str(evidence_values)
     print query_variable.domain.domain_list
     posterior_distribution = samples_count_per_outcome/float(np.sum(samples_count_per_outcome))
     print posterior_distribution
@@ -253,7 +254,7 @@ def main():
     input_values = format_input(sys.argv)
     variables, cp_tables, Hash_Variables, Hash_CPT, Hash_Nodes = Parser(sys.argv[2])
     Graph = build_graph(variables, Hash_CPT, cp_tables, Hash_Nodes)
-    rejection_sampling(input_values, Graph, Hash_Nodes, int(sys.argv[1]))
+    posterior_distribution = rejection_sampling(input_values, Graph, Hash_Nodes, int(sys.argv[1]))
 
 if __name__ == '__main__':
   main()
