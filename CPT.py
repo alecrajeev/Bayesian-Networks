@@ -58,7 +58,6 @@ class CPT(object):
             for i in xrange(0, len(self.given_variables)):
                 helper_domain.append(self.given_variables[i].domain.domain_list)
 
-
             helper_iter = list(product(*helper_domain))
             for i in xrange(0, len(self.helper_table)):
                 self.helper_table[i] = list(helper_iter[i])
@@ -73,6 +72,33 @@ class CPT(object):
                     self.table[i][j] = p
                     return True
         print "woah the table is full"
+
+    def get_sample_value(self, parent_values):
+        """
+        This finds the conditional probability given the parents,
+        and then assigns a random value based upon the probability.
+        """
+        if len(parent_values) == 0:
+            # if this variable has no givens
+            if not(self.given_variables is None):
+                print "whoops, need parent variable values"
+            else:
+                prob = self.table[0]
+                return self.get_assigned_variable(prob)
+        else:
+            if self.given_variables is None:
+                # if there are prior assigned values, but this variable has no givens
+                prob = self.table[0]
+                return self.get_assigned_variable(prob)
+            else:
+                given_v_index = self.get_given_index(parent_values)
+                prob = self.table[given_v_index]
+                return self.get_assigned_variable(prob)
+
+
+    def get_assigned_variable(self, prob):
+        choice = np.random.choice(self.for_variable.domain.domain_list, 1, p=prob)
+        return choice[0]
 
     def get_prob(self, evidence_values):
         for_v = []
@@ -99,6 +125,10 @@ class CPT(object):
 
     def get_given_index(self, evidence_values):
 
+        if self.check_given_variables_needed(evidence_values):
+            print "whoops, not in topological order or something. Required given variable is not included"
+            return None
+
         given_values = [None]*len(self.given_variables)
         for i in xrange(0, len(given_values)):
             given_values[i] = self.get_evidence_val(self.given_variables[i].name, evidence_values)
@@ -106,6 +136,26 @@ class CPT(object):
         for i in xrange(0, len(self.helper_table)):
             if self.check_helper(given_values, i):
                 return i
+
+    def check_given_variables_needed(self, evidence_values):
+        """
+        This assumes that the given variable is initially not in the evidence_values.
+        Then it cycles through each given variable and checks if it's in the evidence_values.
+        If any given variable is not included, it returns False.
+        Otherwise returns true.
+        """
+
+
+        for i in xrange(0, len(self.given_variables)):
+            g = self.given_variables[i].name
+            g_included = False
+            for j in xrange(0, len(evidence_values)):
+                if g == evidence_values[i][0]:
+                    g_included = True
+            if not(g_included):
+                return False
+        return True
+
 
     def get_evidence_val(self, name, evidence_values):
         for i in xrange(0, len(evidence_values)):

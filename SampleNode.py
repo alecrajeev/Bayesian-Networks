@@ -11,5 +11,9 @@ class SampleNode(object):
         self.name = self.random_variable.name
         self.cpt = cpt
         self.value = None
+
+    def assign_random_value(self, parent_values):
+        self.value = self.cpt.get_sample_value(parent_values)
+        parent_values.append([self.name, self.value])
         
 

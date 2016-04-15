@@ -23,18 +23,65 @@ def rejection_sampling(input_values, Graph, Hash_Nodes, N):
         if Graph[i].name == query:
             query_variable = Graph[i].random_variable
 
-    print evidence_values
 
-    single_event = AtomicEvent(Graph)
-    print single_event.sample_nodes[0].random_variable
+    atomic_event_list = [None]*N
 
-    samples = [None]*N
+    # all 1000 events get randomly assigned
+    for i in xrange(0, N):
+        event = AtomicEvent(Graph)
+        prior_sampling(event)
+        atomic_event_list[i] = event
+
+    accept_list = []
+
+    for i in xrange(0, N):
+        event = atomic_event_list[i]
+        if accepted_event(event, evidence_values):
+            accept_list.append(event)
+
+    samples_count_per_outcome = np.zeros(query_variable.domain.size, dtype=np.int32)
+    for i in xrange(0, len(accept_list)):
+        update_count(samples_count_per_outcome, accept_list[i], query_variable)
+
+    print "Query Variable: " + str(query_variable.name)
+    print query_variable.domain.domain_list
+    print samples_count_per_outcome/float(np.sum(samples_count_per_outcome))
+
+def prior_sampling(event):
+    """
+    This assigns each variable a value based upon it's conditional probability randomly
+    """
+
+    # equivalent to evidence_values
+    parent_values = []
+
+    for i in xrange(0, len(event.sample_nodes)):
+        sample = event.sample_nodes[i]
+        sample.assign_random_value(parent_values)
+
+def update_count(samples_count_per_outcome, accepted_event, query_variable):
+    for i in xrange(0, len(accepted_event.sample_nodes)):
+        if accepted_event.sample_nodes[i].name == query_variable.name:
+            j = accepted_event.get_domain_value_index(i)
+            samples_count_per_outcome[j] += 1
+
+def accepted_event(event, evidence_values):
+    """
+    This returns True all the evidence corresponds to the values assigned in the event.
+    It returns False if one of the evidence values is different from the assigned value.
+    """
+
+    for i in xrange(0, len(evidence_values)):
+        if not(event.check_evidence(evidence_values[i][0],evidence_values[i][1])):
+            return False
+
+    return True
+
 
 
 def get_conditional_probability(Y, evidence_values, Graph, Hash_Nodes):
     node = Hash_Nodes.get(Y.name)
     cpt = node.cpt
-    # print node.cpt.get_prob(evidence_values)
     p = cpt.get_prob(evidence_values)
 
     return p
